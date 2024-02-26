@@ -1,7 +1,7 @@
 ffmpeg-python
 python-dotenv
 gradio==3.38.0
-openai
+openai==0.28
 tiktoken
 tinydb
 tinymongo
@@ -9,6 +9,7 @@ proglog
 yt-dlp
 torch
 torchaudio
+redditwarp=1.2.0
 ### whisper timestamped 
 whisper-timestamped
 protobuf==3.20.0

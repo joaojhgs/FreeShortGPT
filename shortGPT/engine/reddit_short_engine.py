@@ -4,6 +4,7 @@ from shortGPT.config.languages import Language
 from shortGPT.engine.content_short_engine import ContentShortEngine
 from shortGPT.editing_framework.editing_engine import EditingEngine, EditingStep, Flow
 from shortGPT.gpt import reddit_gpt, gpt_voice
+import redditwarp.SYNC
 import os
 
 
@@ -15,9 +16,16 @@ class RedditShortEngine(ContentShortEngine):
                  num_images=num_images, watermark=watermark, language=language, voiceModule=voiceModule)
     
     def __generateRandomStory(self):
-        question = reddit_gpt.getInterestingRedditQuestion()
-        script = reddit_gpt.createRedditScript(question)
-        return script
+        client = redditwarp.SYNC.Client()
+        m = next(client.p.subreddit.pull.top('stories', amount=1, time='month'))
+        print(f'''\
+        {m.permalink}
+        {m.id36}+ ^{m.score} | {m.title}
+        Submitted {m.created_at.astimezone().ctime()}{' *' if m.is_edited else ''} \
+        by u/{m.author_display_name} to r/{m.subreddit.name}
+        ''')
+        print(m.body)
+        return m.body, m.title
 
     def __getRealisticStory(self, max_tries=3):
         current_realistic_score = 0
@@ -37,9 +45,7 @@ class RedditShortEngine(ContentShortEngine):
         Implements Abstract parent method to generate the script for the reddit short
         """
         self.logger("Generating reddit question & entertaining story")
-        self._db_script, _ = self.__getRealisticStory(max_tries=1)
-        self._db_reddit_question = reddit_gpt.getQuestionFromThread(
-            self._db_script)
+        self._db_script, self._db_reddit_question = self.__generateRandomStory()
 
     def _prepareCustomAssets(self):
         """
